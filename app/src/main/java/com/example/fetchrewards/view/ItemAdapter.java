@@ -41,7 +41,6 @@ public class ItemAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
         } else if (holder instanceof ItemViewHolder) {
             Item item = (Item) getItem(position);
             ((ItemViewHolder) holder).nameTextView.setText(item.getName());
-            ((ItemViewHolder) holder).listIdTextView.setText(item.getListId());
         }
     }
 
@@ -91,12 +90,11 @@ public class ItemAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
     }
 
     public static class ItemViewHolder extends RecyclerView.ViewHolder {
-        TextView nameTextView, listIdTextView;
+        TextView nameTextView;
 
         public ItemViewHolder(View itemView) {
             super(itemView);
             nameTextView = itemView.findViewById(R.id.item_name);
-            listIdTextView = itemView.findViewById(R.id.item_list_id);
         }
     }
 

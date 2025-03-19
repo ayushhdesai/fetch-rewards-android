@@ -50,11 +50,22 @@ public class MainActivity extends AppCompatActivity implements ItemController.It
 
         for (Map.Entry<Integer, List<Item>> entry : groupedItems.entrySet()) {
             List<Item> itemList = entry.getValue();
-            itemList.sort((item1, item2) -> item1.getName().compareTo(item2.getName()));
+            itemList.sort((item1, item2) -> {
+                int number1 = extractNumberFromName(item1.getName());
+                int number2 = extractNumberFromName(item2.getName());
+
+                return Integer.compare(number1, number2);
+            });
         }
 
         itemAdapter.setGroupedItems(groupedItems);
     }
+
+    private int extractNumberFromName(String name) {
+        String numberString = name.replaceAll("[^0-9]", "");
+        return numberString.isEmpty() ? 0 : Integer.parseInt(numberString);
+    }
+
 
     @Override
     public void onError(String e) {
