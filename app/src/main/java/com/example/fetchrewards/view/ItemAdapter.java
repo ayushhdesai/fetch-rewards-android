@@ -11,43 +11,101 @@ import com.example.fetchrewards.R;
 import com.example.fetchrewards.model.Item;
 
 import java.util.List;
-import java.util.ArrayList;
+import java.util.Map;
 
+public class ItemAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
 
-public class ItemAdapter extends RecyclerView.Adapter<ItemAdapter.ItemViewHolder> {
+    private Map<Integer, List<Item>> groupedItems;
 
-    private List<Item> items = new ArrayList<>();
-
-    @Override
-    public ItemViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-        View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_layout, parent, false);
-        return new ItemViewHolder(view);
+    public ItemAdapter(Map<Integer, List<Item>> groupedItems) {
+        this.groupedItems = groupedItems;
     }
 
     @Override
-    public void onBindViewHolder(ItemViewHolder holder, int position) {
-        Item item = items.get(position);
-        holder.ntView.setText(item.getName());
-        holder.ltView.setText(item.getListId());
+    public RecyclerView.ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
+        View view;
+        if (viewType == 0) {
+            view = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_list_id_header, parent, false);
+            return new ListIdViewHolder(view);
+        } else {
+            view = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_layout, parent, false);
+            return new ItemViewHolder(view);
+        }
+    }
+
+    @Override
+    public void onBindViewHolder(RecyclerView.ViewHolder holder, int position) {
+        if (holder instanceof ListIdViewHolder) {
+            int listId = (int) getItem(position);
+            ((ListIdViewHolder) holder).listIdTextView.setText("List ID: " + listId);
+        } else if (holder instanceof ItemViewHolder) {
+            Item item = (Item) getItem(position);
+            ((ItemViewHolder) holder).nameTextView.setText(item.getName());
+            ((ItemViewHolder) holder).listIdTextView.setText(item.getListId());
+        }
     }
 
     @Override
     public int getItemCount() {
-        return items.size();
+        int itemCount = 0;
+        for (List<Item> itemList : groupedItems.values()) {
+            itemCount += itemList.size() + 1;
+        }
+        return itemCount;
     }
 
-    public void setItems(List<Item> items) {
-        this.items = items;
+    @Override
+    public int getItemViewType(int position) {
+        int count = 0;
+        for (Map.Entry<Integer, List<Item>> entry : groupedItems.entrySet()) {
+            int size = entry.getValue().size();
+            if (position == count) {
+                return 0;
+            }
+            if (position <= count + size) {
+                return 1;
+            }
+            count += size + 1;
+        }
+        return 0;
+    }
+
+    private Object getItem(int position) {
+        int count = 0;
+        for (Map.Entry<Integer, List<Item>> entry : groupedItems.entrySet()) {
+            int size = entry.getValue().size();
+            if (position == count) {
+                return entry.getKey();
+            }
+            if (position <= count + size) {
+                return entry.getValue().get(position - count - 1);
+            }
+            count += size + 1;
+        }
+        return null;
+    }
+
+    public void setGroupedItems(Map<Integer, List<Item>> groupedItems) {
+        this.groupedItems = groupedItems;
         notifyDataSetChanged();
     }
 
     public static class ItemViewHolder extends RecyclerView.ViewHolder {
-        TextView ntView, ltView;
+        TextView nameTextView, listIdTextView;
 
         public ItemViewHolder(View itemView) {
             super(itemView);
-            ntView = itemView.findViewById(R.id.item_name);
-            ltView = itemView.findViewById(R.id.item_list_id);
+            nameTextView = itemView.findViewById(R.id.item_name);
+            listIdTextView = itemView.findViewById(R.id.item_list_id);
+        }
+    }
+
+    public static class ListIdViewHolder extends RecyclerView.ViewHolder {
+        TextView listIdTextView;
+
+        public ListIdViewHolder(View itemView) {
+            super(itemView);
+            listIdTextView = itemView.findViewById(R.id.item_list_id_header);
         }
     }
 }

@@ -13,6 +13,9 @@ import com.example.fetchrewards.view.ItemAdapter;
 import com.example.fetchrewards.controller.ItemController;
 
 import java.util.List;
+import java.util.Map;
+import java.util.TreeMap;
+import java.util.ArrayList;
 
 public class MainActivity extends AppCompatActivity implements ItemController.ItemFetchListener {
 
@@ -28,7 +31,7 @@ public class MainActivity extends AppCompatActivity implements ItemController.It
         recyclerView = findViewById(R.id.recyclerView);
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
 
-        itemAdapter = new ItemAdapter();
+        itemAdapter = new ItemAdapter(new TreeMap<>());
         recyclerView.setAdapter(itemAdapter);
 
         itemController = new ItemController();
@@ -37,12 +40,24 @@ public class MainActivity extends AppCompatActivity implements ItemController.It
 
     @Override
     public void onItemsFetched(List<Item> items) {
-        itemAdapter.setItems(items);
+        Map<Integer, List<Item>> groupedItems = new TreeMap<>();
+
+        for (Item item : items) {
+            int listId = Integer.parseInt(item.getListId());
+            groupedItems.putIfAbsent(listId, new ArrayList<>());
+            groupedItems.get(listId).add(item);
+        }
+
+        for (Map.Entry<Integer, List<Item>> entry : groupedItems.entrySet()) {
+            List<Item> itemList = entry.getValue();
+            itemList.sort((item1, item2) -> item1.getName().compareTo(item2.getName()));
+        }
+
+        itemAdapter.setGroupedItems(groupedItems);
     }
 
     @Override
     public void onError(String e) {
         Toast.makeText(this, "Error: " + e, Toast.LENGTH_SHORT).show();
     }
-
 }

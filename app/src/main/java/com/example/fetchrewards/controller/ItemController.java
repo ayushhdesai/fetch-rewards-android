@@ -9,7 +9,10 @@ import retrofit2.Callback;
 import retrofit2.Response;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
+import java.util.Map;
+import java.util.TreeMap;
 
 public class ItemController {
 
@@ -28,33 +31,36 @@ public class ItemController {
         Call<List<Item>> call = apiService.getItems();
 
         call.enqueue(new Callback<List<Item>>() {
-
             @Override
             public void onResponse(Call<List<Item>> call, Response<List<Item>> response) {
-
                 if (response.isSuccessful()) {
                     List<Item> items = response.body();
 
-                    if(items != null) {
-                        List<Item> filterItem = new ArrayList<>();
-
-                        for(Item item: items){
-                            if(item.getName() != null && !item.getName().isEmpty()) {
-                                filterItem.add(item);
+                    if (items != null) {
+                        List<Item> filteredItems = new ArrayList<>();
+                        for (Item item : items) {
+                            if (item.getName() != null && !item.getName().isEmpty()) {
+                                filteredItems.add(item);
                             }
                         }
 
-                        filterItem.sort((item1, item2) -> {
-                            int listIdComp = item1.getListId().compareTo(item2.getListId());
-                            if (listIdComp == 0){
-                                return item1.getName().compareTo(item2.getName());
-                            }
-                            return listIdComp;
-                        });
+                        Map<Integer, List<Item>> groupedItems = new TreeMap<>();
+                        for (Item item : filteredItems) {
+                            int listId = Integer.parseInt(item.getListId());
+                            groupedItems.putIfAbsent(listId, new ArrayList<>());
+                            groupedItems.get(listId).add(item);
+                        }
 
-                        listener.onItemsFetched(filterItem);
+                        List<Item> sortedItems = new ArrayList<>();
+                        for (List<Item> group : groupedItems.values()) {
+                            group.sort(Comparator.comparing(Item::getName));
+                            sortedItems.addAll(group);
+                        }
+
+                        listener.onItemsFetched(sortedItems);
                     }
-
+                } else {
+                    listener.onError("Response unsuccessful");
                 }
             }
 
@@ -64,6 +70,7 @@ public class ItemController {
             }
         });
     }
+
 
 
 }
