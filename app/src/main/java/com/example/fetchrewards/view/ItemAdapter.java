@@ -1,5 +1,6 @@
 package com.example.fetchrewards.view;
 
+import android.annotation.SuppressLint;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -10,6 +11,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.example.fetchrewards.R;
 import com.example.fetchrewards.model.Item;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -33,14 +35,24 @@ public class ItemAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
         }
     }
 
+    @SuppressLint("SetTextI18n")
     @Override
     public void onBindViewHolder(RecyclerView.ViewHolder holder, int position) {
         if (holder instanceof ListIdViewHolder) {
-            int listId = (int) getItem(position);
+            int listId = getListIdForPosition(position);
             ((ListIdViewHolder) holder).listIdTextView.setText("List ID: " + listId);
         } else if (holder instanceof ItemViewHolder) {
-            Item item = (Item) getItem(position);
-            ((ItemViewHolder) holder).nameTextView.setText(item.getName());
+            List<Item> itemList = getItemListForPosition(position);
+            int itemCount = itemList.size();
+            ((ItemViewHolder) holder).countTextView.setText("Item Count: " + itemCount);
+            StringBuilder itemNames = new StringBuilder();
+            for (int i = 0; i < itemList.size(); i++) {
+                itemNames.append(itemList.get(i).getName());
+                if (i < itemList.size() - 1) {
+                    itemNames.append(", ");
+                }
+            }
+            ((ItemViewHolder) holder).nameTextView.setText(itemNames.toString());
         }
     }
 
@@ -48,7 +60,8 @@ public class ItemAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
     public int getItemCount() {
         int itemCount = 0;
         for (List<Item> itemList : groupedItems.values()) {
-            itemCount += itemList.size() + 1;
+            itemCount += 1;
+            itemCount += 1;
         }
         return itemCount;
     }
@@ -58,30 +71,41 @@ public class ItemAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
         int count = 0;
         for (Map.Entry<Integer, List<Item>> entry : groupedItems.entrySet()) {
             int size = entry.getValue().size();
+
             if (position == count) {
                 return 0;
             }
-            if (position <= count + size) {
+
+            if (position == count + 1) {
                 return 1;
             }
-            count += size + 1;
+
+            count += 2;
         }
         return 0;
     }
 
-    private Object getItem(int position) {
+    private List<Item> getItemListForPosition(int position) {
         int count = 0;
         for (Map.Entry<Integer, List<Item>> entry : groupedItems.entrySet()) {
             int size = entry.getValue().size();
+            if (position == count + 1) {
+                return entry.getValue();
+            }
+            count += 2;
+        }
+        return new ArrayList<>();
+    }
+
+    private int getListIdForPosition(int position) {
+        int count = 0;
+        for (Map.Entry<Integer, List<Item>> entry : groupedItems.entrySet()) {
             if (position == count) {
                 return entry.getKey();
             }
-            if (position <= count + size) {
-                return entry.getValue().get(position - count - 1);
-            }
-            count += size + 1;
+            count += 2;
         }
-        return null;
+        return -1;
     }
 
     public void setGroupedItems(Map<Integer, List<Item>> groupedItems) {
@@ -90,11 +114,12 @@ public class ItemAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
     }
 
     public static class ItemViewHolder extends RecyclerView.ViewHolder {
-        TextView nameTextView;
+        TextView nameTextView, countTextView;
 
         public ItemViewHolder(View itemView) {
             super(itemView);
             nameTextView = itemView.findViewById(R.id.item_name);
+            countTextView = itemView.findViewById(R.id.item_list_count);
         }
     }
 
