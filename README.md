@@ -4,12 +4,12 @@ A simple Android app that fetches and displays items grouped by `ListID` and sor
 
 ## How to Run
 
-1. Clone the repository:
+1. Clone the repository(Open terminal):
    ```sh
-   https://github.com/ayushhdesai/fetch-rewards-android.git
+   git clone https://github.com/ayushhdesai/fetch-rewards-android.git
    cd fetch-rewards-android
 
-2. Open the project:
+2. Open the project(Android studio):
 - Open Android Studio.
 - Click on File > Open and select the project folder.
 
